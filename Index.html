@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Script and ideas by César Rodríguez -->
+  <title>How Businesses Buy Tech Solutions — Crafting Great Proposals</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A2A2E;
+      --accent: #E8663A;
+      --text: #FFFFFF;
+      --blue: #4A90E2;
+      --cyan: #00CED1;
+      --gold: #FFD700;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Mulish', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      background: var(--accent);
+      z-index: 1000;
+      transition: width 0.4s ease;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 80px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(28px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      overflow: hidden;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .content.left { text-align: left; }
+
+    .label {
+      font-size: clamp(0.65rem, 0.9vw, 0.82rem);
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.9rem;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 5vw, 4.2rem);
+      font-weight: 900;
+      line-height: 1.08;
+      margin-bottom: 0.7rem;
+    }
+
+    h2 {
+      font-size: clamp(1.7rem, 3.2vw, 2.9rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.4rem;
+    }
+
+    .subtitle {
+      font-size: clamp(1.1rem, 2vw, 1.75rem);
+      font-weight: 500;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .tagline {
+      font-size: clamp(0.88rem, 1.4vw, 1.2rem);
+      color: rgba(255,255,255,0.4);
+      font-style: italic;
+      margin-top: 2rem;
+      line-height: 1.65;
+    }
+
+    .author-tag {
+      font-size: clamp(0.82rem, 1.1vw, 1rem);
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      margin-top: 0.5rem;
+    }
+
+    .accent  { color: var(--accent); }
+    .cyan    { color: var(--cyan); }
+    .blue-c  { color: var(--blue); }
+
+    /* Points list */
+    .points { list-style: none; margin-top: 1.1rem; }
+
+    .points li {
+      font-size: clamp(0.92rem, 1.55vw, 1.3rem);
+      font-weight: 400;
+      line-height: 1.65;
+      margin-bottom: 0.7rem;
+      padding-left: 1.5rem;
+      position: relative;
+      color: rgba(255,255,255,0.88);
+    }
+
+    .points li::before {
+      content: '▸';
+      color: var(--accent);
+      position: absolute;
+      left: 0;
+    }
+
+    /* Formula */
+    .formula {
+      font-size: clamp(2.6rem, 6.5vw, 5.8rem);
+      font-weight: 900;
+      color: var(--accent);
+      margin: 0.7rem 0 1.4rem;
+      letter-spacing: 0.04em;
+    }
+
+    .formula-parts {
+      display: flex;
+      justify-content: center;
+      gap: 1.1rem;
+      flex-wrap: wrap;
+    }
+
+    .fp {
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 0.85rem 1.2rem;
+      text-align: left;
+      min-width: 175px;
+    }
+
+    .fp .fl {
+      font-size: clamp(1.3rem, 2.3vw, 2rem);
+      font-weight: 900;
+    }
+
+    .fp .fd {
+      font-size: clamp(0.74rem, 1vw, 0.9rem);
+      color: rgba(255,255,255,0.58);
+      margin-top: 0.2rem;
+      line-height: 1.4;
+    }
+
+    .formula-note {
+      margin-top: 1.1rem;
+      font-size: clamp(0.78rem, 1vw, 0.9rem);
+      color: rgba(255,255,255,0.38);
+      font-style: italic;
+    }
+
+    /* Journey map */
+    .journey {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      margin-top: 1.8rem;
+    }
+
+    .jstep {
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      text-align: center;
+      min-width: 115px;
+    }
+
+    .jstep .icon { font-size: 1.35rem; margin-bottom: 0.3rem; }
+
+    .jstep .jlabel {
+      font-size: clamp(0.72rem, 0.95vw, 0.82rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.78);
+    }
+
+    .jarrow {
+      font-size: 1.25rem;
+      color: var(--accent);
+      flex-shrink: 0;
+      padding: 0 0.15rem;
+    }
+
+    /* Block quote */
+    .blockquote {
+      font-size: clamp(1.1rem, 2vw, 1.85rem);
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.88);
+      max-width: 800px;
+      margin: 0 auto;
+      border-left: 4px solid var(--accent);
+      padding-left: 1.5rem;
+      text-align: left;
+    }
+
+    /* Buyer cards */
+    .buyer-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      margin-top: 1.4rem;
+    }
+
+    .buyer-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 1.2rem;
+      border-top: 3px solid;
+      text-align: left;
+    }
+
+    .buyer-card.t { border-color: var(--blue); }
+    .buyer-card.c { border-color: var(--cyan); }
+    .buyer-card.s { border-color: var(--accent); }
+
+    .bc-title {
+      font-size: clamp(0.88rem, 1.25vw, 1.1rem);
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+    }
+
+    .buyer-card.t .bc-title { color: var(--blue); }
+    .buyer-card.c .bc-title { color: var(--cyan); }
+    .buyer-card.s .bc-title { color: var(--accent); }
+
+    .buyer-card ul { list-style: none; }
+
+    .buyer-card ul li {
+      font-size: clamp(0.78rem, 1.05vw, 0.92rem);
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 0.42rem;
+      padding-left: 0.9rem;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .buyer-card ul li::before {
+      content: '·';
+      position: absolute;
+      left: 0;
+      color: rgba(255,255,255,0.38);
+    }
+
+    /* VS comparison */
+    .vs-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      align-items: center;
+      margin-top: 1.4rem;
+      max-width: 880px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .vs-card {
+      background: rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 1.2rem;
+    }
+
+    .vs-card.lose { border: 1.5px solid rgba(255,80,80,0.22); }
+    .vs-card.win  { border: 1.5px solid rgba(232,102,58,0.42); background: rgba(232,102,58,0.06); }
+
+    .vs-label {
+      font-size: clamp(0.68rem, 0.9vw, 0.82rem);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.7rem;
+    }
+
+    .vs-card.lose .vs-label { color: rgba(255,100,100,0.68); }
+    .vs-card.win  .vs-label { color: var(--accent); }
+
+    .vs-card ul { list-style: none; text-align: left; }
+
+    .vs-card ul li {
+      font-size: clamp(0.85rem, 1.15vw, 1rem);
+      color: rgba(255,255,255,0.78);
+      margin-bottom: 0.42rem;
+      padding-left: 1.2rem;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .vs-card.lose ul li::before { content: '✗'; color: rgba(255,100,100,0.62); position: absolute; left: 0; }
+    .vs-card.win  ul li::before { content: '✓'; color: var(--accent); position: absolute; left: 0; }
+
+    .vs-divider {
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: rgba(255,255,255,0.22);
+      text-align: center;
+    }
+
+    /* Pills */
+    .pills {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1.7rem;
+    }
+
+    .pill {
+      border: 1.5px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.05);
+      border-radius: 50px;
+      padding: 0.48rem 1.25rem;
+      font-size: clamp(0.78rem, 1.05vw, 0.92rem);
+      font-weight: 600;
+      color: rgba(255,255,255,0.78);
+    }
+
+    .pill.hot {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(232,102,58,0.08);
+    }
+
+    /* Closing quote */
+    .closing-quote {
+      font-size: clamp(1.35rem, 2.7vw, 2.5rem);
+      font-weight: 700;
+      font-style: italic;
+      line-height: 1.42;
+      color: rgba(255,255,255,0.9);
+      max-width: 880px;
+      margin: 0 auto 1.8rem;
+      padding: 1.4rem 0;
+      border-top: 1px solid rgba(232,102,58,0.28);
+      border-bottom: 1px solid rgba(232,102,58,0.28);
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 20px;
+      right: 26px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.16);
+      z-index: 2;
+      letter-spacing: 0.06em;
+    }
+
+    .footer a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      color: rgba(255,255,255,0.38);
+    }
+
+    /* Navigation */
+    #nav {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      z-index: 1000;
+    }
+
+    #nav button {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.05);
+      color: white;
+      font-size: 1.15rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    #nav button:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    #counter {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.28);
+      min-width: 44px;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .slide { padding: 36px 20px; }
+      .buyer-grid { grid-template-columns: 1fr; gap: 0.7rem; }
+      .vs-grid { grid-template-columns: 1fr; }
+      .vs-divider { display: none; }
+      .journey { gap: 0.15rem; }
+      .jstep { min-width: 80px; padding: 0.6rem 0.65rem; }
+      .formula-parts { gap: 0.55rem; }
+      .fp { min-width: 140px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ─── SLIDE 1: TITLE ─── -->
+<section class="slide active" id="s0">
+  <canvas id="c-title"></canvas>
+  <div class="content">
+    <div class="label">César Rodríguez</div>
+    <h1>How Businesses<br><span class="accent">Buy Tech Solutions</span></h1>
+    <div class="subtitle">Crafting Great Proposals</div>
+    <div class="tagline">
+      "It's people making decisions.<br>
+      It's all about human connections."
+    </div>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<!-- ─── SLIDE 2: CORE IDEA ─── -->
+<section class="slide" id="s1">
+  <div class="content left">
+    <div class="label">Foundation</div>
+    <h2>A Proposal Is <span class="accent">More Than</span> a Document</h2>
+    <ul class="points">
+      <li>A proposal is a <strong>commitment</strong> — a promise to solve problems, drive growth, or reduce costs</li>
+      <li>The foundation of every great proposal is <strong class="accent">trust</strong></li>
+      <li>Buying decisions involve real people — with concerns, self-interest, and biases</li>
+      <li>Effective proposals work <em>with</em> human factors, not against them</li>
+    </ul>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<!-- ─── SLIDE 3: THE FORMULA ─── -->
+<section class="slide" id="s2">
+  <canvas id="c-formula"></canvas>
+  <div class="content">
+    <div class="label">Leading Change Framework</div>
+    <h2>The <span class="accent">Change Formula</span></h2>
+    <p style="font-size:clamp(0.88rem,1.3vw,1.1rem);color:rgba(255,255,255,0.55);margin-bottom:0.6rem;">Change happens when the product of dissatisfaction, vision, and a credible process outweighs the perceived cost of changing.</p>
+    <div class="formula">D × V × P &gt; C</div>
+    <div class="formula-parts">
+      <div class="fp">
+        <div class="fl accent">D</div>
+        <div class="fd">Dissatisfaction<br>Understand current pain</div>
+      </div>
+      <div class="fp">
+        <div class="fl cyan">V</div>
+        <div class="fd">Vision<br>Define the desired future</div>
+      </div>
+      <div class="fp">
+        <div class="fl blue-c">P</div>
+        <div class="fd">Process<br>Outline the specific steps</div>
+      </div>
+      <div class="fp" style="border-color:rgba(255,255,255,0.18)">
+        <div class="fl" style="color:rgba(255,255,255,0.45)">C</div>
+        <div class="fd">Cost of Change<br>Acknowledge resistance</div>
+      </div>
+    </div>
+    <p class="formula-note">If any of D, V, or P is zero — the formula collapses.</p>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<!-- ─── SLIDE 4: RIGHT PROBLEM ─── -->
+<section class="slide" id="s3">
+  <div class="content">
+    <div class="label">Step 1 — Diagnose</div>
+    <h2>Start With the <span class="accent">Right Problem</span></h2>
+    <ul class="points" style="text-align:left;max-width:680px;margin:0.9rem auto 0">
+      <li>Use customer journey mapping to pinpoint real pain points</li>
+      <li>Don't propose solutions before diagnosing the problem</li>
+      <li>Pain is personal — understand <em>who</em> feels it and <em>how</em> it affects them</li>
+    </ul>
+    <div class="journey">
+      <div class="jstep"><div class="icon">🔍</div><div class="jlabel">Awareness</div></div>
+      <div class="jarrow">→</div>
+      <div class="jstep"><div class="icon">🤔</div><div class="jlabel">Consideration</div></div>
+      <div class="jarrow">→</div>
+      <div class="jstep"><div class="icon">✅</div><div class="jlabel">Decision</div></div>
+      <div class="jarrow">→</div>
+      <div class="jstep"><div class="icon">🔄</div><div class="jlabel">Retention</div></div>
+    </div>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<!-- ─── SLIDE 5: VISION ─── -->
+<section class="slide" id="s4">
+  <div class="content">
+    <div class="label">Step 2 — Vision</div>
+    <h2>Sell the <span class="accent">Future</span>, Not the Feature</h2>
+    <ul class="points" style="text-align:left;max-width:700px;margin:0.9rem auto 1.7rem">
+      <li>Present bold, simple, and measurable future states</li>
+      <li>Use storytelling to make the vision tangible and relatable</li>
+      <li>Help the buyer <em>see</em> life after the problem is solved</li>
+    </ul>
+    <div class="blockquote">
+      "Good proposals are memorable. They build trust. They stand out from competition."
+    </div>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<!-- ─── SLIDE 6: PROCESS ─── -->
+<section class="slide" id="s5">
+  <div class="content left">
+    <div class="label">Step 3 — Process</div>
+    <h2>Process <span class="accent">Builds Trust</span></h2>
+    <ul class="points">
+      <li>Show your <strong>methodology</strong> — not just your capability</li>
+      <li>Many proposals fail not for lack of vision, but for lack of a <strong class="accent">credible path</strong></li>
+      <li>Proof-of-Concepts (PoCs) and demos are powerful trust-builders</li>
+      <li>Make demos a <strong>mandatory</strong> part of your engagement strategy</li>
+    </ul>
+    <p style="margin-top:1.4rem;font-size:clamp(0.88rem,1.3vw,1.08rem);color:var(--cyan);font-style:italic;">
+      Demos materialize vision. They connect abstract tech to real business needs.
+    </p>
+    <p style="margin-top:0.7rem;font-size:clamp(0.78rem,1.05vw,0.92rem);color:rgba(255,255,255,0.38);">
+      With today's AI tools, building a working demo has never been faster — there's no excuse not to show, not just tell.
+    </p>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<!-- ─── SLIDE 7: BUYER TYPES ─── -->
+<section class="slide" id="s6">
+  <div class="content">
+    <div class="label">Know Your Buyer</div>
+    <h2>Not All Buyers Are <span class="accent">the Same</span></h2>
+    <div class="buyer-grid">
+      <div class="buyer-card t">
+        <div class="bc-title">Transactional</div>
+        <ul>
+          <li>Short-term focused</li>
+          <li>Price or differentiation sensitive</li>
+          <li>Quick wins matter</li>
+        </ul>
+      </div>
+      <div class="buyer-card c">
+        <div class="bc-title">Customized</div>
+        <ul>
+          <li>Wants tailored solutions</li>
+          <li>Values broad expertise networks</li>
+          <li>Long relationship potential</li>
+        </ul>
+      </div>
+      <div class="buyer-card s">
+        <div class="bc-title">Strategic Partner</div>
+        <ul>
+          <li>Seeks foundational change</li>
+          <li>May require exclusivity</li>
+          <li>Deepest commitment level</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:1.1rem;font-size:clamp(0.78rem,1.05vw,0.92rem);color:rgba(255,255,255,0.4);">
+      Identify which type your prospect is — <strong style="color:var(--accent)">early</strong> in discussions.
+    </p>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<!-- ─── SLIDE 8: RESISTANCE ─── -->
+<section class="slide" id="s7">
+  <div class="content left">
+    <div class="label">Managing Change</div>
+    <h2>Resistance Is <span class="accent">Inevitable</span>. Manage It.</h2>
+    <ul class="points">
+      <li>Decisions blend intuition with data — <strong>respect both</strong></li>
+      <li>First impressions in early interactions set lasting perceptions</li>
+      <li>Value is not just pricing — it's <strong class="accent">confidence in the partnership journey</strong></li>
+      <li>Acknowledge uncertainties honestly; show willingness to navigate them together</li>
+    </ul>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<!-- ─── SLIDE 9: WHY US ─── -->
+<section class="slide" id="s8">
+  <div class="content">
+    <div class="label">Differentiation</div>
+    <h2>Answer <span class="accent">"Why Us?"</span></h2>
+    <div class="vs-grid">
+      <div class="vs-card lose">
+        <div class="vs-label">Generic Proposals</div>
+        <ul>
+          <li>Copy-paste approach</li>
+          <li>No client-specific context</li>
+          <li>Transactional mindset</li>
+        </ul>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="vs-card win">
+        <div class="vs-label">Tailored Proposals</div>
+        <ul>
+          <li>Customized to their situation</li>
+          <li>Demonstrates deep understanding</li>
+          <li>Authentic partnership mindset</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:1.2rem;font-size:clamp(0.78rem,1.05vw,0.92rem);color:rgba(255,255,255,0.4);">
+      Be willing to journey together — even when the path isn't perfectly clear.
+    </p>
+    <p style="margin-top:0.5rem;font-size:clamp(0.78rem,1.05vw,0.92rem);color:rgba(255,255,255,0.28);font-style:italic;">
+      AI tools now make deep customization scalable — you can tailor every proposal without starting from scratch.
+    </p>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<!-- ─── SLIDE 10: CLOSING ─── -->
+<section class="slide" id="s9">
+  <canvas id="c-closing"></canvas>
+  <div class="content">
+    <div class="label">The Constant Principle</div>
+    <div class="closing-quote">
+      "It's people making decisions.<br>
+      It's all about <span class="accent">human connections</span>."
+    </div>
+    <div class="pills">
+      <div class="pill">Start with trust</div>
+      <div class="pill">Build with process</div>
+      <div class="pill">Win with vision</div>
+    </div>
+    <div class="author-tag" style="margin-top:1.7rem;">César Rodríguez · <a href="https://cesarrg.com" target="_blank" style="color:inherit;text-decoration:none;">cesarrg.com</a></div>
+  </div>
+  <div class="footer"><a href="https://cesarrg.com" target="_blank">cesarrg.com</a></div>
+</section>
+
+<nav id="nav">
+  <button id="btn-prev">‹</button>
+  <span id="counter">1 / 10</span>
+  <button id="btn-next">›</button>
+</nav>
+
+<script>
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+const slides = Array.from(document.querySelectorAll('.slide'));
+const total  = slides.length;
+let cur = 0;
+const rafIds = {};
+const progressBar = document.getElementById('progress-bar');
+const counterEl   = document.getElementById('counter');
+
+function updateUI() {
+  progressBar.style.width = ((cur + 1) / total * 100) + '%';
+  counterEl.textContent   = (cur + 1) + ' / ' + total;
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= total || idx === cur) return;
+  stopAnim(cur);
+  slides[cur].classList.remove('active');
+  cur = idx;
+  slides[cur].classList.add('active');
+  startAnim(cur);
+  updateUI();
+}
+
+document.getElementById('btn-next').onclick = () => goTo(cur + 1);
+document.getElementById('btn-prev').onclick = () => goTo(cur - 1);
+
+document.addEventListener('keydown', e => {
+  if (['ArrowRight', 'ArrowDown', ' '].includes(e.key)) { e.preventDefault(); goTo(cur + 1); }
+  if (['ArrowLeft',  'ArrowUp'].includes(e.key))        { e.preventDefault(); goTo(cur - 1); }
+});
+
+// ─── ANIMATIONS ───────────────────────────────────────────────────────────────
+// Animation inspired by "The Way of Code" by Rick Rubin
+// Creative interpretation for this presentation
+
+// ── A: Human Connection Network (Slide 1) ────────────────────────────────────
+// Remixed from ZoomParticle.html — orbital proximity network
+// Symbolises human connections at the heart of every proposal
+
+const titleState = (() => {
+  const canvas = document.getElementById('c-title');
+  const ctx    = canvas.getContext('2d');
+  const N = 44;
+  let particles = [];
+  let t = 0;
+  let ready = false;
+
+  function init() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    particles = [];
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    for (let i = 0; i < N; i++) {
+      const angle = (i / N) * Math.PI * 2 + (Math.random() - 0.5) * 0.8;
+      const r     = 90 + Math.random() * 270;
+      const roll  = Math.random();
+      particles.push({
+        x: cx + Math.cos(angle) * r,
+        y: cy + Math.sin(angle) * r,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: 1.8 + Math.random() * 2.4,
+        col: roll < 0.35 ? [232,102,58] : roll < 0.55 ? [0,206,209] : [255,255,255],
+        no: Math.random() * 1000,
+      });
+    }
+    ready = true;
+  }
+
+  init();
+  window.addEventListener('resize', init);
+
+  function frame() {
+    if (!rafIds['title']) return;
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2;
+
+    ctx.fillStyle = 'rgba(10,42,46,0.22)';
+    ctx.fillRect(0, 0, W, H);
+    t += 0.006;
+
+    for (const p of particles) {
+      const nv = Math.sin(p.x * 0.003 + p.no + t) * Math.cos(p.y * 0.003 + p.no - t * 0.7);
+      p.vx += Math.cos(nv * Math.PI) * 0.011;
+      p.vy += Math.sin(nv * Math.PI) * 0.011;
+      const dx = cx - p.x, dy = cy - p.y, d = Math.hypot(dx, dy);
+      if (d > 310) { p.vx += dx / d * 0.033; p.vy += dy / d * 0.033; }
+      else if (d < 65) { p.vx -= dx / d * 0.026; p.vy -= dy / d * 0.026; }
+      p.vx *= 0.966; p.vy *= 0.966;
+      p.x += p.vx; p.y += p.vy;
+    }
+
+    const MAX_D = 185;
+    ctx.lineWidth = 0.7;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const d  = Math.hypot(dx, dy);
+        if (d < MAX_D) {
+          const a = (1 - d / MAX_D) * 0.17;
+          ctx.strokeStyle = `rgba(232,102,58,${a})`;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    for (const p of particles) {
+      const [r,g,b] = p.col;
+      ctx.fillStyle = `rgba(${r},${g},${b},0.82)`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    rafIds['title'] = requestAnimationFrame(frame);
+  }
+
+  return { start: () => { rafIds['title'] = requestAnimationFrame(frame); } };
+})();
+
+// ── B: Layered Sine Waves (Slide 3 — Formula) ────────────────────────────────
+// Remixed from Waves.html — multi-layer sine stacking with opacity envelope
+// Three coloured bands represent D (orange), V (cyan), P (blue) working in concert
+
+const formulaState = (() => {
+  const canvas = document.getElementById('c-formula');
+  const ctx    = canvas.getContext('2d');
+  let t = 0;
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const waveSets = [
+    // Background ambient (white, subtle)
+    { r:255, g:255, b:255, maxA:0.055, count:20, yR:0.5, spread:0.5, amp:42, freq:0.006, ps:0.12 },
+    // D — Dissatisfaction (orange)
+    { r:232, g:102, b:58,  maxA:0.55,  count:7,  yR:0.32, spread:0.1, amp:26, freq:0.011, ps:0.28 },
+    // V — Vision (cyan)
+    { r:0,   g:206, b:209, maxA:0.50,  count:7,  yR:0.5,  spread:0.1, amp:22, freq:0.009, ps:0.22 },
+    // P — Process (blue)
+    { r:74,  g:144, b:226, maxA:0.50,  count:7,  yR:0.68, spread:0.1, amp:18, freq:0.007, ps:0.18 },
+  ];
+
+  function frame() {
+    if (!rafIds['formula']) return;
+    const W = canvas.width, H = canvas.height;
+    ctx.fillStyle = 'rgba(10,42,46,0.14)';
+    ctx.fillRect(0, 0, W, H);
+    t += 0.011;
+
+    for (const ws of waveSets) {
+      for (let l = 0; l < ws.count; l++) {
+        const frac  = l / ws.count;
+        const yBase = H * (ws.yR + (frac - 0.5) * ws.spread);
+        const phase = t * ws.ps + l * 0.32;
+        const amp   = ws.amp * (0.6 + 0.4 * Math.sin(l * 0.55 + t * 0.22));
+        const bA    = ws.maxA * (0.35 + 0.65 * Math.pow(Math.sin(frac * Math.PI), 2));
+        const alpha = Math.min(ws.maxA, Math.max(0.015, bA + 0.07 * Math.sin(t * 0.5 + l * 0.2)));
+
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(${ws.r},${ws.g},${ws.b},${alpha})`;
+        ctx.lineWidth   = 0.85;
+        const STEPS = 220;
+        for (let i = 0; i <= STEPS; i++) {
+          const x = (i / STEPS) * W;
+          const y = yBase
+            + amp * Math.sin(x * ws.freq + phase)
+            + amp * 0.32 * Math.sin(x * ws.freq * 2.1 + phase * 1.5)
+            + amp * 0.16 * Math.sin(x * ws.freq * 4 - phase * 0.62);
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
+
+    rafIds['formula'] = requestAnimationFrame(frame);
+  }
+
+  return { start: () => { rafIds['formula'] = requestAnimationFrame(frame); } };
+})();
+
+// ── C: Radial Pulse (Slide 10 — Closing) ─────────────────────────────────────
+// Inspired by RadialGrowth.html — concentric rings expanding outward from centre
+// Symbolises impact and learning radiating outward from every human connection
+
+const closingState = (() => {
+  const canvas = document.getElementById('c-closing');
+  const ctx    = canvas.getContext('2d');
+  const rings  = [];
+  let fc = 0, lastSpawn = -999;
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function spawnRing() {
+    rings.push({
+      r: 0,
+      maxR: Math.hypot(canvas.width, canvas.height) * 0.44,
+      speed: 0.4 + Math.random() * 0.3,
+      col: Math.random() < 0.58 ? [232,102,58] : [0,206,209],
+      lw:  0.5 + Math.random() * 0.6,
+    });
+  }
+
+  function frame() {
+    if (!rafIds['closing']) return;
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2;
+
+    ctx.fillStyle = 'rgba(10,42,46,0.14)';
+    ctx.fillRect(0, 0, W, H);
+
+    fc++;
+    if (fc - lastSpawn > 140) { spawnRing(); lastSpawn = fc; }
+
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const rg = rings[i];
+      rg.r += rg.speed;
+      const alpha = Math.max(0, (1 - rg.r / rg.maxR)) * 0.10;
+      if (alpha < 0.003) { rings.splice(i, 1); continue; }
+      const [r,g,b] = rg.col;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rg.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+      ctx.lineWidth   = rg.lw;
+      ctx.stroke();
+    }
+
+    // Soft centre glow
+    const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 75);
+    grd.addColorStop(0, 'rgba(232,102,58,0.05)');
+    grd.addColorStop(1, 'rgba(10,42,46,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 75, 0, Math.PI * 2);
+    ctx.fill();
+
+    rafIds['closing'] = requestAnimationFrame(frame);
+  }
+
+  return { start: () => { rafIds['closing'] = requestAnimationFrame(frame); } };
+})();
+
+// ─── Dispatch ─────────────────────────────────────────────────────────────────
+const animMap = {
+  0: { key: 'title',   anim: titleState },
+  2: { key: 'formula', anim: formulaState },
+  9: { key: 'closing', anim: closingState },
+};
+
+function startAnim(idx) {
+  const a = animMap[idx];
+  if (!a) return;
+  rafIds[a.key] = true;
+  a.anim.start();
+}
+
+function stopAnim(idx) {
+  const a = animMap[idx];
+  if (!a) return;
+  const id = rafIds[a.key];
+  if (typeof id === 'number') cancelAnimationFrame(id);
+  rafIds[a.key] = null;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+updateUI();
+startAnim(0);
+</script>
+</body>
+</html>
