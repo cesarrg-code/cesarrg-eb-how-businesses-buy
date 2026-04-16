@@ -49,6 +49,7 @@
       transform: translateY(28px);
       transition: opacity 0.6s ease, transform 0.6s ease;
       overflow: hidden;
+      will-change: opacity, transform;
     }
 
     .slide.active {
@@ -672,9 +673,9 @@
       It's all about <span class="accent">human connections</span>."
     </div>
     <div class="pills">
-      <div class="pill">Start with trust</div>
-      <div class="pill">Build with process</div>
-      <div class="pill">Win with vision</div>
+      <div class="pill hot">Start with trust</div>
+      <div class="pill hot">Build with process</div>
+      <div class="pill hot">Win with vision</div>
     </div>
     <div class="author-tag" style="margin-top:1.7rem;">César Rodríguez · <a href="https://cesarrg.com" target="_blank" style="color:inherit;text-decoration:none;">cesarrg.com</a></div>
   </div>
@@ -682,12 +683,29 @@
 </section>
 
 <nav id="nav">
-  <button id="btn-prev">‹</button>
+  <button id="btn-prev" aria-label="Previous slide">‹</button>
   <span id="counter">1 / 10</span>
-  <button id="btn-next">›</button>
+  <button id="btn-next" aria-label="Next slide">›</button>
 </nav>
 
 <script>
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+const dpr = window.devicePixelRatio || 1;
+
+function resizeCanvas(canvas) {
+  const W = window.innerWidth, H = window.innerHeight;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  canvas.getContext('2d').scale(dpr, dpr);
+}
+
+function debounce(fn, ms) {
+  let t;
+  return function() { clearTimeout(t); t = setTimeout(fn, ms); };
+}
+
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
 const slides = Array.from(document.querySelectorAll('.slide'));
 const total  = slides.length;
@@ -733,13 +751,12 @@ const titleState = (() => {
   const N = 44;
   let particles = [];
   let t = 0;
-  let ready = false;
 
   function init() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
+    resizeCanvas(canvas);
+    const W = window.innerWidth, H = window.innerHeight;
     particles = [];
-    const cx = canvas.width / 2, cy = canvas.height / 2;
+    const cx = W / 2, cy = H / 2;
     for (let i = 0; i < N; i++) {
       const angle = (i / N) * Math.PI * 2 + (Math.random() - 0.5) * 0.8;
       const r     = 90 + Math.random() * 270;
@@ -754,15 +771,14 @@ const titleState = (() => {
         no: Math.random() * 1000,
       });
     }
-    ready = true;
   }
 
   init();
-  window.addEventListener('resize', init);
+  window.addEventListener('resize', debounce(init, 150));
 
   function frame() {
     if (!rafIds['title']) return;
-    const W = canvas.width, H = canvas.height;
+    const W = window.innerWidth, H = window.innerHeight;
     const cx = W / 2, cy = H / 2;
 
     ctx.fillStyle = 'rgba(10,42,46,0.22)';
@@ -821,12 +837,9 @@ const formulaState = (() => {
   const ctx    = canvas.getContext('2d');
   let t = 0;
 
-  function resize() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+  function resize() { resizeCanvas(canvas); }
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', debounce(resize, 150));
 
   const waveSets = [
     // Background ambient (white, subtle)
@@ -841,7 +854,7 @@ const formulaState = (() => {
 
   function frame() {
     if (!rafIds['formula']) return;
-    const W = canvas.width, H = canvas.height;
+    const W = window.innerWidth, H = window.innerHeight;
     ctx.fillStyle = 'rgba(10,42,46,0.14)';
     ctx.fillRect(0, 0, W, H);
     t += 0.011;
@@ -887,17 +900,14 @@ const closingState = (() => {
   const rings  = [];
   let fc = 0, lastSpawn = -999;
 
-  function resize() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+  function resize() { resizeCanvas(canvas); }
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', debounce(resize, 150));
 
   function spawnRing() {
     rings.push({
       r: 0,
-      maxR: Math.hypot(canvas.width, canvas.height) * 0.44,
+      maxR: Math.hypot(window.innerWidth, window.innerHeight) * 0.44,
       speed: 0.4 + Math.random() * 0.3,
       col: Math.random() < 0.58 ? [232,102,58] : [0,206,209],
       lw:  0.5 + Math.random() * 0.6,
@@ -906,7 +916,7 @@ const closingState = (() => {
 
   function frame() {
     if (!rafIds['closing']) return;
-    const W = canvas.width, H = canvas.height;
+    const W = window.innerWidth, H = window.innerHeight;
     const cx = W / 2, cy = H / 2;
 
     ctx.fillStyle = 'rgba(10,42,46,0.14)';
